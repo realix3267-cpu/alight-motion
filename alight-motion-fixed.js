@@ -1,34 +1,55 @@
 
-const payload = {
-  result: {
-    result: "success",
-    msTime: 1709216800128,
-    accountCreatedMillis: null,
-    licenses: [{
-      benefits: [
-        "RemoveWatermark",
-        "MemberEffects",
-        "ProjectPackageSharing",
-        "FutureMemberFeatures",
-        "AdvancedEasing",
-        "CameraObjects",
-        "LayerParenting",
-        "CloudStorageLowTier"
-      ],
-      type: "subscription",
-      store: "apple_app_store",
-      autoRenewing: true,
-      orderNumber: "300001752007005",
-      productId: "alightcreative.motion.1y_t60_1w",
-      period: "1y",
-      label: null,
-      details: null,
-      expires: 1893456000000,
-      valid: true,
-      linkStatus: "linked-current"
-    }],
-    warnings: []
-  }
-};
 
-$done({ body: JSON.stringify(payload) });
+(function () {
+  const TAG = "[Alight Motion]";
+  const url = $request?.url || "";
+  const body = $response?.body;
+
+  try {
+    if (!url.includes("getAccountStatusAndLicenses")) {
+      console.log(TAG + " Unexpected URL: " + url);
+      $done({});
+      return;
+    }
+
+    if (typeof body !== "string" || !body.length) {
+      console.log(TAG + " Empty response");
+      $done({});
+      return;
+    }
+
+    let data;
+
+    try {
+      data = JSON.parse(body);
+    } catch (error) {
+      console.log(TAG + " Invalid JSON: " + error.message);
+      $done({});
+      return;
+    }
+
+    if (!data || typeof data !== "object") {
+      console.log(TAG + " Unexpected response");
+      $done({});
+      return;
+    }
+
+    const result = data.result;
+
+    if (result && typeof result === "object") {
+      const licenses = result.licenses;
+
+      console.log(
+        TAG + " Licenses: " +
+        (Array.isArray(licenses) ? licenses.length : 0)
+      );
+    }
+
+    console.log(TAG + " Response processed");
+    $done({ body: JSON.stringify(data) });
+
+  } catch (error) {
+    console.log(TAG + " Error: " + error.message);
+    $done({});
+  }
+})();
